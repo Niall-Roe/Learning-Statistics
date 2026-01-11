@@ -92,9 +92,14 @@ ui <- fluidPage(
       uiOutput("severity_output"),
       
       hr(),
-      
-      h4("Bayes Factor:"),
-      uiOutput("bayes_output")
+
+      checkboxInput("show_bf", "Show Bayes Factor", FALSE),
+
+      conditionalPanel(
+        condition = "input.show_bf == true",
+        h4("Bayes Factor:"),
+        uiOutput("bayes_output")
+      )
     ),
     
     mainPanel(
@@ -883,12 +888,18 @@ server <- function(input, output, session) {
       if (reject_h0()) {
         HTML(paste0(
           "<p><strong>Rejection Case:</strong></p>",
-          "<p>Observed mean (", round(input$observed_mean, 2), 
-          ") ≥ Critical value (", round(critical_value(), 2), 
+          "<p>Observed mean (", round(input$observed_mean, 2),
+          ") ≥ Critical value (", round(critical_value(), 2),
           "), so we reject H₀: μ ≤ ", mu0(), ".</p>",
+          "<div class='alert alert-info' style='margin: 10px 0;'>",
+          "<h5>Interpreting Rejection (Mayo):</h5>",
+          "<p><em>\"Rejection may be interpreted in many ways. I recommend construing it as 'evidence against H₀'.\"</em></p>",
+          "<p>This means we have evidence that μ is not consistent with H₀. The severity analysis tells us ",
+          "how well-tested specific claims about μ are.</p>",
+          "</div>",
           "<p><strong>Severity:</strong> For claim μ > μ₁, severity = Pr(X̄ ≤ observed | μ = μ₁). ",
           "High severity (≥0.84) means we'd rarely get a result this small if the claim were true.</p>",
-          "<p><strong>Current Parameters:</strong> n=", n(), ", σ=", sigma(), 
+          "<p><strong>Current Parameters:</strong> n=", n(), ", σ=", sigma(),
           ", SE=", round(se(), 3), "</p>",
           "<p>The green region shows severity. Larger n gives smaller SE and sharper tests.</p>"
         ))
